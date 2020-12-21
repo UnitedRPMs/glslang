@@ -1,0 +1,10 @@
+BUILD/*
+BUILDROOT/*
+RPMS/*
+SPECS/*
+SRPMS/*
+*.tar.bz2
+*.tar.gz
+bfg*.jar
+*.rpm
+.directory
