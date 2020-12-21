@@ -13,6 +13,7 @@ License:        BSD and GPLv3+ and ASL 2.0
 URL:            https://github.com/KhronosGroup
 Source0:        %url/%{name}/archive/%{commit}/%{name}-%{commit}.tar.gz
 Patch1:         0001-pkg-config-compatibility.patch
+Patch2:		glslang-default-resource-limits_staticlib.patch
 
 BuildRequires:  gcc-c++
 BuildRequires:  cmake3
