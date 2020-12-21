@@ -35,7 +35,13 @@ ES and OpenGL shading languages. It implements a strict
 interpretation of the specifications for these languages.
 
 %prep
-%autosetup -p1 -n %{name}-%{commit}
+%setup -n %{name}-%{commit}
+%patch1 -p1
+
+cp -rf %{_builddir}/%{name}-%{commit} %{_builddir}/%{name}-%{commit}-static
+pushd %{_builddir}/%{name}-%{commit}-static
+%patch2 -p1 
+popd
 
 %build
 
@@ -44,16 +50,17 @@ interpretation of the specifications for these languages.
 mkdir -p build-{shared,static}
 
 cmake3 -B shared \
-      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DCMAKE_INSTALL_PREFIX=%{_prefix} \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_SHARED_LIBS=ON 
      
 
- 
-cmake3 -B static \
-      -DCMAKE_INSTALL_PREFIX=/usr \
+pushd %{_builddir}/%{name}-%{commit}-static
+cmake3 -B %{_builddir}/%{name}-%{commit}/static \
+      -DCMAKE_INSTALL_PREFIX=%{_prefix} \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_SHARED_LIBS=OFF    
+      -DBUILD_SHARED_LIBS=OFF  
+popd  
 
 %install
 
@@ -61,14 +68,19 @@ cmake3 -B static \
 
 %make_install -C static
 
+# Install libglslang-default-resource-limits.a
+install -pm 0644 $PWD/static/StandAlone/libglslang-default-resource-limits.a %{buildroot}%{_libdir}/
+
 
 # we don't want them in here
 rm -rf %{buildroot}%{_includedir}/SPIRV
 
-cd %{buildroot}/%{_libdir}
+pushd %{buildroot}/%{_libdir}
   for lib in *.so; do
     ln -sf "${lib}" "${lib}.0"
   done
+popd  
+
 
 
 %files
@@ -100,6 +112,7 @@ cd %{buildroot}/%{_libdir}
 %{_libdir}/libglslang.a
 %{_libdir}/libGenericCodeGen.a
 %{_libdir}/libMachineIndependent.a
+%{_libdir}/libglslang-default-resource-limits.a
 %{_libdir}/pkgconfig/glslang.pc
 %{_libdir}/pkgconfig/spirv.pc
 %{_libdir}/cmake/*
